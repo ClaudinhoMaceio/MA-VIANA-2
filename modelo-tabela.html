@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo de Tabela - Controle de Medição</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 28px;
+        }
+        
+        .header h2 {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 18px;
+        }
+        
+        .tabela-principal {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .cartao-ponto {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .cartao-ponto th,
+        .cartao-ponto td {
+            border: 1px solid #ddd;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .cartao-ponto th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .header-row th {
+            background-color: #0056b3;
+            font-size: 16px;
+            padding: 15px 8px;
+        }
+        
+        .sub-header-row th {
+            background-color: #007bff;
+            font-size: 12px;
+            padding: 10px 8px;
+        }
+        
+        .sub-header-row th small {
+            display: block;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+        
+        .cartao-ponto td {
+            background-color: #f9f9f9;
+        }
+        
+        .soma-diaria {
+            background-color: #fff3cd !important;
+            color: #856404;
+            font-weight: bold;
+        }
+        
+        .contrato {
+            background-color: #d1ecf1 !important;
+            color: #0c5460;
+            font-weight: bold;
+        }
+        
+        .total-row {
+            background-color: #e2e3e5 !important;
+            font-weight: bold;
+        }
+        
+        .total-row td {
+            background-color: #e2e3e5 !important;
+        }
+        
+        .unit-row {
+            background-color: #f8f9fa !important;
+        }
+        
+        .unit-row td {
+            background-color: #f8f9fa !important;
+        }
+        
+        .rs-total-row {
+            background-color: #d4edda !important;
+            font-weight: bold;
+        }
+        
+        .rs-total-row td {
+            background-color: #d4edda !important;
+        }
+        
+        .dia-semana {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-top: 2px;
+        }
+        
+        .data-dia {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .botoes-controle {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secundario {
+            background-color: #6c757d;
+        }
+        
+        .btn-secundario:hover {
+            background-color: #545b62;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .form-row label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        
+        .form-row input {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        .form-row input[type="time"] {
+            width: 100px;
+        }
+        
+        .form-row input[type="date"] {
+            width: 130px;
+        }
+        
+        .form-row input[type="number"] {
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <div class="header">
+            <h1>CONTROLE DE MEDIÇÃO</h1>
+            <h2>M.A VIANA LOCAÇÕES E SERVIÇOS - ME</h2>
+        </div>
+
+        <!-- Tabela principal -->
+        <div class="tabela-principal">
+            <table class="cartao-ponto">
+                <thead>
+                    <tr class="header-row">
+                        <th>MÊS</th>
+                        <th colspan="3">APONTAMENTO</th>
+                        <th colspan="2">DESCONTOS</th>
+                    </tr>
+                    <tr class="sub-header-row">
+                        <th>MÊS/ANO<br><small>DIA</small></th>
+                        <th>ENTRADA</th>
+                        <th>ALMOÇO</th>
+                        <th>SAIDA</th>
+                        <th class="soma-diaria">SOMA DIARIA</th>
+                        <th class="contrato">CONTRATO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="data-dia">20</span>
+                            <span class="dia-semana">DOM</span>
+                        </td>
+                        <td>07:00</td>
+                        <td>12:00 - 13:00</td>
+                        <td>17:00</td>
+                        <td class="soma-diaria">09:00</td>
+                        <td class="contrato">08:00</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="data-dia">21</span>
+                            <span class="dia-semana">SEG</span>
+                        </td>
+                        <td>07:00</td>
+                        <td>12:00 - 13:00</td>
+                        <td>17:00</td>
+                        <td class="soma-diaria">09:00</td>
+                        <td class="contrato">08:00</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="data-dia">22</span>
+                            <span class="dia-semana">TER</span>
+                        </td>
+                        <td>07:00</td>
+                        <td>12:00 - 13:00</td>
+                        <td>17:00</td>
+                        <td class="soma-diaria">09:00</td>
+                        <td class="contrato">08:00</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td><strong>TOTAL</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td class="soma-diaria"><strong>27:00</strong></td>
+                        <td class="contrato"><strong>24:00</strong></td>
+                    </tr>
+                    <tr class="unit-row">
+                        <td><strong>VALOR UNIT</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td class="soma-diaria"><strong>R$ 100,00</strong></td>
+                        <td class="contrato"><strong>R$ 100,00</strong></td>
+                    </tr>
+                    <tr class="rs-total-row">
+                        <td><strong>VALOR TOTAL</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td class="soma-diaria"><strong>R$ 2.700,00</strong></td>
+                        <td class="contrato"><strong>R$ 2.400,00</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Controles de entrada -->
+        <div class="botoes-controle">
+            <div class="form-row">
+                <label>Data: <input type="date" id="data"></label>
+                <label>Entrada: <input type="time" id="entrada" value="07:00"></label>
+                <label>Almoço Início: <input type="time" id="almoco-inicio" value="12:00"></label>
+                <label>Almoço Fim: <input type="time" id="almoco-fim" value="13:00"></label>
+                <label>Saída: <input type="time" id="saida" value="17:00"></label>
+                <button type="button" class="btn" onclick="adicionarLinha()">Adicionar</button>
+            </div>
+            
+            <div class="form-row">
+                <button type="button" class="btn" onclick="preencherMes()">Preencher Mês</button>
+                <button type="button" class="btn-secundario" onclick="limparTabela()">Limpar</button>
+                <button type="button" class="btn-secundario" onclick="exportarPDF()">Exportar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para adicionar nova linha
+        function adicionarLinha() {
+            const data = document.getElementById('data').value;
+            const entrada = document.getElementById('entrada').value;
+            const almocoInicio = document.getElementById('almoco-inicio').value;
+            const almocoFim = document.getElementById('almoco-fim').value;
+            const saida = document.getElementById('saida').value;
+            
+            if (!data || !entrada || !saida) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            // Calcular horas trabalhadas
+            const horasTrabalhadas = calcularHoras(entrada, almocoInicio, almocoFim, saida);
+            const horasContrato = 8; // 8 horas por dia
+            
+            // Criar nova linha
+            const tbody = document.querySelector('.cartao-ponto tbody');
+            const newRow = document.createElement('tr');
+            
+            const dataObj = new Date(data);
+            const dia = dataObj.getDate();
+            const diaSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'][dataObj.getDay()];
+            
+            newRow.innerHTML = `
+                <td>
+                    <span class="data-dia">${dia}</span>
+                    <span class="dia-semana">${diaSemana}</span>
+                </td>
+                <td>${entrada}</td>
+                <td>${almocoInicio} - ${almocoFim}</td>
+                <td>${saida}</td>
+                <td class="soma-diaria">${horasTrabalhadas}</td>
+                <td class="contrato">${horasContrato}:00</td>
+            `;
+            
+            tbody.appendChild(newRow);
+            atualizarTotais();
+        }
+        
+        // Função para calcular horas trabalhadas
+        function calcularHoras(entrada, almocoInicio, almocoFim, saida) {
+            const entradaMin = converterParaMinutos(entrada);
+            const almocoInicioMin = converterParaMinutos(almocoInicio);
+            const almocoFimMin = converterParaMinutos(almocoFim);
+            const saidaMin = converterParaMinutos(saida);
+            
+            const horasAntesAlmoco = almocoInicioMin - entradaMin;
+            const horasDepoisAlmoco = saidaMin - almocoFimMin;
+            const totalMinutos = horasAntesAlmoco + horasDepoisAlmoco;
+            
+            const horas = Math.floor(totalMinutos / 60);
+            const minutos = totalMinutos % 60;
+            
+            return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+        }
+        
+        // Função para converter hora para minutos
+        function converterParaMinutos(hora) {
+            const [h, m] = hora.split(':').map(Number);
+            return h * 60 + m;
+        }
+        
+        // Função para atualizar totais
+        function atualizarTotais() {
+            const linhas = document.querySelectorAll('.cartao-ponto tbody tr');
+            let totalHoras = 0;
+            let totalContrato = 0;
+            
+            linhas.forEach(linha => {
+                const somaDiaria = linha.querySelector('.soma-diaria').textContent;
+                const contrato = linha.querySelector('.contrato').textContent;
+                
+                totalHoras += converterParaMinutos(somaDiaria);
+                totalContrato += converterParaMinutos(contrato);
+            });
+            
+            const totalHorasFormatado = `${Math.floor(totalHoras / 60).toString().padStart(2, '0')}:${(totalHoras % 60).toString().padStart(2, '0')}`;
+            const totalContratoFormatado = `${Math.floor(totalContrato / 60).toString().padStart(2, '0')}:${(totalContrato % 60).toString().padStart(2, '0')}`;
+            
+            document.querySelector('.total-row .soma-diaria').innerHTML = `<strong>${totalHorasFormatado}</strong>`;
+            document.querySelector('.total-row .contrato').innerHTML = `<strong>${totalContratoFormatado}</strong>`;
+        }
+        
+        // Função para preencher mês
+        function preencherMes() {
+            const mes = prompt('Digite o mês (ex: 04 para abril):');
+            const ano = prompt('Digite o ano (ex: 2025):');
+            
+            if (!mes || !ano) return;
+            
+            const diasNoMes = new Date(ano, mes, 0).getDate();
+            
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                const data = `${ano}-${mes.padStart(2, '0')}-${dia.toString().padStart(2, '0')}`;
+                document.getElementById('data').value = data;
+                adicionarLinha();
+            }
+        }
+        
+        // Função para limpar tabela
+        function limparTabela() {
+            if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+                document.querySelector('.cartao-ponto tbody').innerHTML = '';
+                atualizarTotais();
+            }
+        }
+        
+        // Função para exportar PDF (simulada)
+        function exportarPDF() {
+            alert('Funcionalidade de exportação PDF será implementada!');
+        }
+        
+        // Definir data atual
+        document.getElementById('data').value = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html> 

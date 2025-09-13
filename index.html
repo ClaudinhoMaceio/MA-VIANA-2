@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sistema de Controle de Medição - M.A VIANA LOCAÇÕES</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Sistema completo de controle de medição com exportação de relatórios e assinatura digital">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Controle de Medição">
+    <meta name="msapplication-TileColor" content="#007bff">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icon.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="style.css?v=4.0">
+    
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho do Sistema -->
+        <div class="header">
+            <div class="sistema-titulo">
+                <div class="titulo-com-logo">
+                    <h1><i class="fas fa-chart-line"></i> CONTROLE DE MEDIÇÃO</h1>
+                    <div class="logo-titulo">
+                        <img src="assets/images/icon.png" alt="M.A VIANA LOCAÇÕES Logo" class="logo-lateral-titulo" id="logo-lateral">
+                    </div>
+                </div>
+                <h2>M.A VIANA LOCAÇÕES E SERVIÇOS - ME</h2>
+                <div class="status-bar">
+                    <span id="connection-status" class="status-online">
+                        <i class="fas fa-wifi"></i> Online
+                    </span>
+                    <span class="pwa-info">
+                        <i class="fas fa-mobile-alt"></i> PWA Disponível
+                    </span>
+                    <span class="debug-info">
+                        <i class="fas fa-bug"></i> Debug Ativo
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Informações da Empresa -->
+            <div class="empresa-info">
+                <div class="info-row">
+                    <div class="info-item">
+                        <label><i class="fas fa-building"></i> <strong>CNPJ:</strong></label>
+                        <input type="text" id="cnpj-empresa" value="14.251.442/0001-15" class="campo-editavel" data-validate="cnpj" placeholder="XX.XXX.XXX/XXXX-XX">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-industry"></i> <strong>NOME DA EMPRESA:</strong></label>
+                        <input type="text" id="nome-empresa" value="M.A VIANA LOCAÇÕES E SERVIÇOS - ME" class="campo-editavel">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-map-marker-alt"></i> <strong>ENDERECO OBRA:</strong></label>
+                        <input type="text" id="endereco-obra" value="" class="campo-editavel" placeholder="Digite o endereço da obra">
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-item">
+                        <label><i class="fas fa-road"></i> <strong>Rua:</strong></label>
+                        <input type="text" id="rua-empresa" value="Rua Desembargador Auro Cerqueira Leite, 36" class="campo-editavel">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-city"></i> <strong>Cidade:</strong></label>
+                        <input type="text" id="cidade-empresa" value="Cidade Kemel - São Paulo, SP" class="campo-editavel">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-mail-bulk"></i> <strong>CEP:</strong></label>
+                        <input type="text" id="cep-empresa" value="08130-410" class="campo-editavel">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informações da Locação -->
+            <div class="locacao-info">
+                <div class="info-row">
+                    <div class="info-item">
+                        <label><i class="fas fa-truck"></i> <strong>EQUIPAMENTO:</strong></label>
+                        <input type="text" id="equipamento" value="BOB CAT" class="campo-editavel">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-dollar-sign"></i> <strong>CONTRATO:</strong></label>
+                        <input type="text" id="valor-contrato" value="2500" class="campo-editavel campo-valor" placeholder="R$ 2.500,00">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-calendar-alt"></i> <strong>TIPO:</strong></label>
+                        <input type="text" id="tipo-contrato" value="MENSAL" class="campo-editavel">
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-item">
+                        <label><i class="fas fa-calendar-week"></i> <strong>PERIODO:</strong></label>
+                        <input type="text" id="periodo" value="20/04 a 19/05/2025" class="campo-editavel">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-divide"></i> <strong>DIVISÃO:</strong></label>
+                        <select id="divisao-contrato" class="campo-editavel">
+                            <option value="mes">Mensal</option>
+                            <option value="quinzena">Quinzenal</option>
+                        </select>
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-user-hard-hat"></i> <strong>OPERADOR:</strong></label>
+                        <input type="text" id="operador" value="ANTONIO PEREIRA" placeholder="Nome do operador" class="campo-editavel">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel de Controle Rápido -->
+        <div class="painel-controle-rapido">
+            <div class="controle-header">
+                <h3><i class="fas fa-sliders-h"></i> Controle Rápido</h3>
+            </div>
+            <div class="controle-grid">
+                <div class="controle-item">
+                    <label><i class="fas fa-clock"></i> Horas por Dia Útil:</label>
+                    <select id="horas-dia-util" class="controle-select">
+                        <option value="8">8 horas</option>
+                        <option value="9" selected>9 horas</option>
+                        <option value="10">10 horas</option>
+                    </select>
+                </div>
+                <div class="controle-item">
+                    <label><i class="fas fa-calendar-day"></i> Horas Sexta-feira:</label>
+                    <select id="horas-sexta" class="controle-select">
+                        <option value="8" selected>8 horas</option>
+                        <option value="9">9 horas</option>
+                        <option value="10">10 horas</option>
+                    </select>
+                </div>
+                <div class="controle-item">
+                    <label><i class="fas fa-calendar-week"></i> Incluir Fins de Semana:</label>
+                    <select id="incluir-fins-semana" class="controle-select">
+                        <option value="false" selected>Não</option>
+                        <option value="true">Sim</option>
+                    </select>
+                </div>
+                <div class="controle-item">
+                    <label><i class="fas fa-calendar-alt"></i> Mês/Ano:</label>
+                    <input type="month" id="data-selecionada" class="controle-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela Principal -->
+        <div class="tabela-principal">
+            <div class="tabela-header">
+                <h3><i class="fas fa-table"></i> Registro de Horas Trabalhadas</h3>
+                <div class="tabela-acoes">
+                    <button id="toggle-tabela" class="btn-acao">
+                        <i class="fas fa-eye"></i> Mostrar/Ocultar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="tabela-container" class="tabela-container">
+                <table class="cartao-ponto">
+                    <thead>
+                        <tr class="header-row">
+                            <th>MÊS</th>
+                            <th colspan="4">APONTAMENTO</th>
+                            <th colspan="2">DESCONTOS</th>
+                        </tr>
+                        <tr class="sub-header-row">
+                            <th>MÊS/ANO<br><small>DIA</small></th>
+                            <th>ENTRADA</th>
+                            <th>ALMOÇO</th>
+                            <th>SAIDA</th>
+                            <th class="soma-diaria">SOMA DIARIA</th>
+                            <th class="contrato">CONTRATO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-principal">
+                        <!-- Linhas serão adicionadas dinamicamente -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>TOTAL</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td class="soma-diaria" id="total-soma-diaria"><strong>00:00</strong></td>
+                            <td class="contrato" id="total-contrato"><strong>00:00</strong></td>
+                        </tr>
+                        <tr class="unit-row">
+                            <td><strong>VALOR UNIT</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td class="soma-diaria" id="valor-unit-hora"><strong>R$ 0,00</strong></td>
+                            <td class="contrato" id="valor-unit-contrato"><strong>R$ 0,00</strong></td>
+                        </tr>
+                        <tr class="rs-total-row">
+                            <td><strong>VALOR TOTAL</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td class="soma-diaria" id="valor-total-soma"><strong>R$ 0,00</strong></td>
+                            <td class="contrato" id="valor-total-contrato"><strong>R$ 0,00</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Botões de Controle -->
+        <div class="botoes-controle">
+            <div class="botoes-grupo">
+                <button id="preencher-mes" class="btn-futurista">
+                    <i class="fas fa-calendar-alt"></i> 📅 Preencher Mês
+                </button>
+                <button id="preencher-quinzena" class="btn-futurista">
+                    <i class="fas fa-calendar-week"></i> 📊 Preencher Quinzena
+                </button>
+                <button id="limpar-tabela" class="btn-secundario">
+                    <i class="fas fa-trash"></i> 🗑️ Limpar Tabela
+                </button>
+            </div>
+            <div class="botoes-grupo">
+                <button id="gerar-relatorio" class="btn-futurista">
+                    <i class="fas fa-file-alt"></i> 📋 Gerar Relatório
+                </button>
+                <button id="exportar-pdf" class="btn-futurista">
+                    <i class="fas fa-file-pdf"></i> 📄 Exportar PDF
+                </button>
+                <button id="teste-pdf" class="btn-teste">
+                    <i class="fas fa-vial"></i> 🧪 Teste PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Resumo Final -->
+        <div class="resumo-final">
+            <div class="resumo-item">
+                <h4><i class="fas fa-chart-bar"></i> MEDIÇÃO</h4>
+                <p><strong>Total de Horas:</strong> <span id="total-horas-final">00:00</span></p>
+                <p><strong>Total de Dias:</strong> <span id="total-dias-final">0</span></p>
+                <p><strong>Valor Total:</strong> <span id="valor-total-final">R$ 0,00</span></p>
+            </div>
+            <div class="resumo-item">
+                <h4><i class="fas fa-minus-circle"></i> DESCONTOS</h4>
+                <p><strong>Combustível:</strong> <span id="total-combustivel">R$ 0,00</span></p>
+                <p><strong>Total Descontos:</strong> <span id="total-descontos-final">R$ 0,00</span></p>
+            </div>
+            <div class="resumo-item total">
+                <h4><i class="fas fa-calculator"></i> TOTAL MEDIÇÃO</h4>
+                <p><strong><span id="total-medicao-final">R$ 0,00</span></strong></p>
+            </div>
+        </div>
+
+        <!-- Assinatura -->
+        <div class="assinatura-section">
+            <h4><i class="fas fa-signature"></i> Assinatura do Operador</h4>
+            <div class="canvas-container">
+                <canvas id="assinatura-canvas" width="400" height="150"></canvas>
+            </div>
+            <div class="assinatura-botoes">
+                <button type="button" id="limpar-assinatura" class="btn-pequeno">
+                    <i class="fas fa-eraser"></i> Limpar
+                </button>
+                <button type="button" id="salvar-assinatura" class="btn-pequeno">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+                <button type="button" id="exportar-assinatura" class="btn-pequeno">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+                <button type="button" id="importar-assinatura" class="btn-pequeno">
+                    <i class="fas fa-upload"></i> Importar
+                </button>
+                <input type="file" id="arquivo-assinatura" accept=".png,.jpg,.jpeg" style="display: none;">
+            </div>
+        </div>
+
+        <!-- Botão de Instalação PWA -->
+        <div class="botoes-exportacao">
+            <button id="install-app" style="display: none;" class="btn-install">
+                <i class="fas fa-download"></i> 📱 Instalar App
+            </button>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="rodape">
+            <p><i class="fas fa-map-marker-alt"></i> SÃO PAULO, <span id="data-footer"></span> / 2025</p>
+            <p class="sistema-info">Controle de Medição - M.A VIANA LOCAÇÕES E SERVIÇOS - ME</p>
+            <p class="versao">Versão 4.0 - Sistema Profissional e Funcional</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <script src="script.js?v=4.0"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registrado:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Falha no registro do Service Worker:', error);
+                    });
+            });
+        }
+        
+        // Verificar status de conexão
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connection-status');
+            if (statusElement) {
+                if (navigator.onLine) {
+                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> Online';
+                    statusElement.className = 'status-online';
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline';
+                    statusElement.className = 'status-offline';
+                }
+            }
+        }
+        
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        updateConnectionStatus();
+    </script>
+</body>
+</html> 
