@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gerar Ícone PNG</title>
+</head>
+<body>
+    <canvas id="canvas" width="64" height="64" style="border: 1px solid #ccc;"></canvas>
+    <br><br>
+    <button onclick="downloadIcon()">Baixar Ícone PNG</button>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Fundo azul
+        ctx.fillStyle = '#007bff';
+        ctx.fillRect(0, 0, 64, 64);
+        
+        // Círculo branco interno
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(32, 32, 24, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Texto "MV" em azul
+        ctx.fillStyle = '#007bff';
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('MV', 32, 32);
+        
+        function downloadIcon() {
+            const link = document.createElement('a');
+            link.download = 'icone_mv.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>

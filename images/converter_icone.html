@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Converter Ícone SVG para PNG</title>
+</head>
+<body>
+    <h2>Converter Ícone SVG para PNG do PDF</h2>
+    <p>Clique no botão para baixar o ícone PNG baseado no SVG:</p>
+    
+    <div style="margin: 20px;">
+        <h3>Ícone SVG Atual:</h3>
+        <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="30" fill="#007bff" stroke="#0056b3" stroke-width="2"/>
+            <circle cx="32" cy="32" r="24" fill="#ffffff"/>
+            <text x="32" y="40" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#007bff">MV</text>
+        </svg>
+    </div>
+    
+    <canvas id="canvas" width="64" height="64" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <br>
+    <button onclick="downloadIcon()">Baixar Ícone MV.png</button>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Desenhar o ícone baseado no SVG
+        // Círculo externo azul
+        ctx.fillStyle = '#007bff';
+        ctx.beginPath();
+        ctx.arc(32, 32, 30, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Borda do círculo externo
+        ctx.strokeStyle = '#0056b3';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Círculo interno branco
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(32, 32, 24, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Texto "MV" em azul
+        ctx.fillStyle = '#007bff';
+        ctx.font = 'bold 20px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('MV', 32, 32);
+        
+        function downloadIcon() {
+            const link = document.createElement('a');
+            link.download = 'icone_mv.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
