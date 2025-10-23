@@ -255,6 +255,56 @@ body {
     animation: slideIn var(--transition-normal) ease-out;
 }
 
+/* Estilo específico para select de equipamento */
+#equipamento {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid transparent;
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 0.95em;
+    transition: all var(--transition-normal);
+    cursor: pointer;
+}
+
+#equipamento:focus {
+    outline: none;
+    background: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+#equipamento:hover {
+    border-color: var(--primary-color);
+    background: white;
+}
+
+#equipamento-customizado {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid transparent;
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 0.95em;
+    transition: all var(--transition-normal);
+}
+
+#equipamento-customizado:focus {
+    outline: none;
+    background: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+#equipamento-customizado:hover {
+    border-color: var(--primary-color);
+    background: white;
+}
+
 @keyframes slideIn {
     from { transform: translateX(-100%); }
     to { transform: translateX(0); }
@@ -266,16 +316,280 @@ body {
 }
 
 /* ========================================================
-   PAINEL DE CONTROLE RÁPIDO
+   PAINEL DE CONTROLE AVANÇADO
    ======================================================== */
 
-.painel-controle-rapido {
+.painel-controle-avancado {
     background: white;
     border-radius: var(--border-radius-md);
-    padding: 25px;
+    padding: 30px;
     margin: 20px 0;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     border-left: 5px solid var(--primary-color);
+    transition: all var(--transition-normal);
+}
+
+.painel-controle-avancado:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.tipo-medicao-section {
+    margin-bottom: 30px;
+}
+
+.tipo-medicao-section h4 {
+    color: var(--primary-color);
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tipo-medicao-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.tipo-item {
+    position: relative;
+}
+
+.tipo-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tipo-item label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    background: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.tipo-item label::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    z-index: 0;
+}
+
+.tipo-item label i {
+    font-size: 2em;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    transition: all var(--transition-normal);
+    z-index: 1;
+    position: relative;
+}
+
+.tipo-item label span {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 5px;
+    z-index: 1;
+    position: relative;
+}
+
+.tipo-item label small {
+    font-size: 0.9em;
+    color: #666;
+    z-index: 1;
+    position: relative;
+}
+
+.tipo-item input[type="radio"]:checked + label {
+    border-color: var(--primary-color);
+    background: var(--gradient-primary);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.tipo-item input[type="radio"]:checked + label::before {
+    opacity: 1;
+}
+
+.tipo-item input[type="radio"]:checked + label i,
+.tipo-item input[type="radio"]:checked + label span,
+.tipo-item input[type="radio"]:checked + label small {
+    color: white;
+}
+
+.tipo-item label:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.configuracoes-especificas {
+    margin-bottom: 30px;
+}
+
+.config-section {
+    display: none;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid #e0e0e0;
+    transition: all var(--transition-normal);
+}
+
+.config-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.config-item label {
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dias-semana-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.dia-checkbox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    background: white;
+    text-align: center;
+}
+
+.dia-checkbox input[type="checkbox"] {
+    margin-bottom: 8px;
+    transform: scale(1.2);
+}
+
+.dia-checkbox span {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.dia-checkbox:hover {
+    border-color: var(--primary-color);
+    background: #f8f9fa;
+}
+
+.dia-checkbox input[type="checkbox"]:checked + span {
+    color: var(--primary-color);
+}
+
+.dia-checkbox:has(input[type="checkbox"]:checked) {
+    border-color: var(--primary-color);
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.dia-checkbox:has(input[type="checkbox"]:checked) span {
+    color: white;
+}
+
+.configuracoes-horario {
+    border-top: 2px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.configuracoes-horario h4 {
+    color: var(--primary-color);
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.horario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.horario-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.horario-item label {
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.controle-input, .controle-select {
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: var(--border-radius-sm);
+    font-size: 14px;
+    transition: all var(--transition-normal);
+    background: white;
+}
+
+.controle-input:focus, .controle-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.controle-input:hover, .controle-select:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .controle-header h3 {
@@ -437,6 +751,18 @@ body {
     font-weight: 600;
 }
 
+.horas-extra {
+    background: #fff3cd !important;
+    color: #856404;
+    font-weight: 600;
+}
+
+.adc-not {
+    background: #d4edda !important;
+    color: #155724;
+    font-weight: 600;
+}
+
 .total-row {
     background: #e2e3e5 !important;
     font-weight: 700;
@@ -588,6 +914,165 @@ body {
 /* ========================================================
    RESUMO FINAL
    ======================================================== */
+
+.desconto-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.desconto-item label {
+    min-width: 120px;
+    font-size: 14px;
+    color: #333;
+}
+
+.campo-editavel-desconto {
+    width: 80px;
+    padding: 5px 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    background: #f8f9fa;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.campo-editavel-desconto:focus {
+    outline: none;
+    border-color: #007bff;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.campo-editavel-desconto:hover {
+    border-color: #007bff;
+    background: white;
+}
+
+.desconto-item span {
+    font-weight: 600;
+    color: #dc3545;
+    min-width: 80px;
+}
+
+/* Campos editáveis na tabela - Melhorados para visibilidade */
+.data-editavel, .horario-editavel {
+    width: 100%;
+    padding: 6px 8px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    color: #000;
+    transition: all 0.3s ease;
+    min-height: 32px;
+}
+
+.data-editavel:focus, .horario-editavel:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.data-editavel:hover, .horario-editavel:hover {
+    border-color: #007bff;
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+/* Ajustar tamanho dos campos na tabela */
+.data-editavel {
+    width: 140px;
+    font-size: 13px;
+}
+
+.horario-editavel {
+    width: 90px;
+    font-size: 14px;
+}
+
+/* Notificações */
+.notificacao {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+}
+
+.notificacao-conteudo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-radius: 8px;
+}
+
+.notificacao-mensagem {
+    flex: 1;
+    font-weight: 500;
+    color: white;
+}
+
+.notificacao-fechar {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 15px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.notificacao-fechar:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.notificacao-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.notificacao-error {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+}
+
+.notificacao-warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.notificacao-info {
+    background: linear-gradient(135deg, #17a2b8, #6f42c1);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
 
 .resumo-final {
     display: grid;

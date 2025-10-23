@@ -14,9 +14,9 @@
     <meta name="msapplication-TileColor" content="#007bff">
     
     <!-- PWA Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icon.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/gerar_icone.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/gerar_icone.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/gerar_icone.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -35,11 +35,26 @@
                 <div class="titulo-com-logo">
                     <h1><i class="fas fa-chart-line"></i> CONTROLE DE MEDIÇÃO</h1>
                     <div class="logo-titulo">
-                        <img src="assets/images/icon.png" alt="M.A VIANA LOCAÇÕES Logo" class="logo-lateral-titulo" id="logo-lateral">
+                        <div class="logo-lateral-titulo" id="logo-lateral" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                            <img src="images/gerar_icone.png" alt="Logo MV" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="60" height="60" style="display: none;">
+                                <circle cx="32" cy="32" r="30" fill="#007bff" stroke="#0056b3" stroke-width="2"/>
+                                <g fill="white">
+                                    <rect x="12" y="40" width="40" height="3" rx="1.5"/>
+                                    <circle cx="16" cy="42" r="2"/>
+                                    <circle cx="24" cy="38" r="2"/>
+                                    <circle cx="32" cy="35" r="2"/>
+                                    <circle cx="40" cy="32" r="2"/>
+                                    <circle cx="48" cy="30" r="2"/>
+                                    <path d="M16,42 L24,38 L32,35 L40,32 L48,30" stroke="white" stroke-width="2" fill="none"/>
+                                    <path d="M20,20 L20,45 L24,45 L24,28 L28,35 L32,28 L36,35 L40,28 L40,45 L44,45 L44,20 L38,20 L32,30 L26,20 Z" fill="white"/>
+                                </g>
+                            </svg>
+                        </div>
                     </div>
                 </div>
                 <h2>M.A VIANA LOCAÇÕES E SERVIÇOS - ME</h2>
-                <div class="status-bar">
+                <div class="status-bar" style="display: none;">
                     <span id="connection-status" class="status-online">
                         <i class="fas fa-wifi"></i> Online
                     </span>
@@ -89,11 +104,24 @@
                 <div class="info-row">
                     <div class="info-item">
                         <label><i class="fas fa-truck"></i> <strong>EQUIPAMENTO:</strong></label>
-                        <input type="text" id="equipamento" value="BOB CAT" class="campo-editavel">
+                        <select id="equipamento" class="campo-editavel" onchange="verificarEquipamentoCustomizado()">
+                            <option value="BOB CAT">BOB CAT</option>
+                            <option value="RETROESCAVADEIRA">RETROESCAVADEIRA</option>
+                            <option value="MINI ESCAVADEIRA (08 TON)">MINI ESCAVADEIRA (08 TON)</option>
+                            <option value="ESCAVADEIRA HIDRÁULICA (18 TON)">ESCAVADEIRA HIDRÁULICA (18 TON)</option>
+                            <option value="MINI ESCAVADEIRA 03 TON">MINI ESCAVADEIRA 03 TON</option>
+                            <option value="CAMINHÃO BASCULANT">CAMINHÃO BASCULANT</option>
+                            <option value="OUTRO">OUTRO (Personalizado)</option>
+                        </select>
+                        <input type="text" id="equipamento-customizado" placeholder="Digite o equipamento personalizado" class="campo-editavel" style="display: none; margin-top: 5px;">
+                    </div>
+                    <div class="info-item">
+                        <label><i class="fas fa-building"></i> <strong>NOME DO CONTRATO/EMPRESA:</strong></label>
+                        <input type="text" id="nome-contrato" class="campo-editavel" placeholder="Ex: Cons Vila Romana" value="Cons Vila Romana">
                     </div>
                     <div class="info-item">
                         <label><i class="fas fa-dollar-sign"></i> <strong>CONTRATO:</strong></label>
-                        <input type="text" id="valor-contrato" value="2500" class="campo-editavel campo-valor" placeholder="R$ 2.500,00">
+                        <input type="text" id="valor-contrato" value="2.500,00" class="campo-editavel campo-valor" placeholder="R$ 2.500,00" oninput="formatarMoedaInput(this)">
                     </div>
                     <div class="info-item">
                         <label><i class="fas fa-calendar-alt"></i> <strong>TIPO:</strong></label>
@@ -120,38 +148,178 @@
             </div>
         </div>
 
-        <!-- Painel de Controle Rápido -->
-        <div class="painel-controle-rapido">
+        <!-- Painel de Controle Avançado -->
+        <div class="painel-controle-avancado">
             <div class="controle-header">
-                <h3><i class="fas fa-sliders-h"></i> Controle Rápido</h3>
+                <h3><i class="fas fa-cogs"></i> Configuração de Medição</h3>
             </div>
-            <div class="controle-grid">
-                <div class="controle-item">
-                    <label><i class="fas fa-clock"></i> Horas por Dia Útil:</label>
-                    <select id="horas-dia-util" class="controle-select">
-                        <option value="8">8 horas</option>
-                        <option value="9" selected>9 horas</option>
-                        <option value="10">10 horas</option>
-                    </select>
+            
+            <!-- Tipo de Medição -->
+            <div class="tipo-medicao-section">
+                <h4><i class="fas fa-calendar-check"></i> Tipo de Medição</h4>
+                <div class="tipo-medicao-grid">
+                    <div class="tipo-item">
+                        <input type="radio" id="tipo-mensal" name="tipo-medicao" value="mensal" checked>
+                        <label for="tipo-mensal">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Mensal</span>
+                            <small>Todo o mês</small>
+                        </label>
+                    </div>
+                    <div class="tipo-item">
+                        <input type="radio" id="tipo-quinzenal" name="tipo-medicao" value="quinzenal">
+                        <label for="tipo-quinzenal">
+                            <i class="fas fa-calendar-week"></i>
+                            <span>Quinzenal</span>
+                            <small>15 dias</small>
+                        </label>
+                    </div>
+                    <div class="tipo-item">
+                        <input type="radio" id="tipo-diaria" name="tipo-medicao" value="diaria">
+                        <label for="tipo-diaria">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>Diária</span>
+                            <small>1 dia</small>
+                        </label>
+                    </div>
+                    <div class="tipo-item">
+                        <input type="radio" id="tipo-semanal" name="tipo-medicao" value="semanal">
+                        <label for="tipo-semanal">
+                            <i class="fas fa-calendar-week"></i>
+                            <span>Semanal</span>
+                            <small>7 dias</small>
+                        </label>
+                    </div>
+                    <div class="tipo-item">
+                        <input type="radio" id="tipo-personalizado" name="tipo-medicao" value="personalizado">
+                        <label for="tipo-personalizado">
+                            <i class="fas fa-user-cog"></i>
+                            <span>Personalizado</span>
+                            <small>Dias específicos</small>
+                        </label>
+                    </div>
                 </div>
-                <div class="controle-item">
-                    <label><i class="fas fa-calendar-day"></i> Horas Sexta-feira:</label>
-                    <select id="horas-sexta" class="controle-select">
-                        <option value="8" selected>8 horas</option>
-                        <option value="9">9 horas</option>
-                        <option value="10">10 horas</option>
-                    </select>
+            </div>
+
+            <!-- Configurações Específicas -->
+            <div class="configuracoes-especificas">
+                <!-- Mensal -->
+                <div id="config-mensal" class="config-section active">
+                    <div class="config-item">
+                        <label><i class="fas fa-calendar-alt"></i> Mês/Ano:</label>
+                        <input type="month" id="data-mensal" class="controle-input">
+                    </div>
                 </div>
-                <div class="controle-item">
-                    <label><i class="fas fa-calendar-week"></i> Incluir Fins de Semana:</label>
-                    <select id="incluir-fins-semana" class="controle-select">
-                        <option value="false" selected>Não</option>
-                        <option value="true">Sim</option>
-                    </select>
+
+                <!-- Quinzenal -->
+                <div id="config-quinzenal" class="config-section">
+                    <div class="config-item">
+                        <label><i class="fas fa-calendar-alt"></i> Mês/Ano:</label>
+                        <input type="month" id="data-quinzenal" class="controle-input">
+                    </div>
+                    <div class="config-item">
+                        <label><i class="fas fa-calendar-day"></i> Quinzena:</label>
+                        <select id="quinzena" class="controle-select">
+                            <option value="1">1ª Quinzena (1-15)</option>
+                            <option value="2">2ª Quinzena (16-31)</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="controle-item">
-                    <label><i class="fas fa-calendar-alt"></i> Mês/Ano:</label>
-                    <input type="month" id="data-selecionada" class="controle-input">
+
+                <!-- Diária -->
+                <div id="config-diaria" class="config-section">
+                    <div class="config-item">
+                        <label><i class="fas fa-calendar-day"></i> Data:</label>
+                        <input type="date" id="data-diaria" class="controle-input">
+                    </div>
+                </div>
+
+                <!-- Semanal -->
+                <div id="config-semanal" class="config-section">
+                    <div class="config-item">
+                        <label><i class="fas fa-calendar-week"></i> Semana:</label>
+                        <input type="week" id="data-semanal" class="controle-input">
+                    </div>
+                </div>
+
+                <!-- Personalizado -->
+                <div id="config-personalizado" class="config-section">
+                    <div class="config-item">
+                        <label><i class="fas fa-calendar-alt"></i> Mês/Ano:</label>
+                        <input type="month" id="data-personalizado" class="controle-input">
+                    </div>
+                    <div class="config-item">
+                        <label><i class="fas fa-calendar-check"></i> Dias da Semana:</label>
+                        <div class="dias-semana-grid">
+                            <label class="dia-checkbox">
+                                <input type="checkbox" id="segunda" value="1">
+                                <span>Seg</span>
+                            </label>
+                            <label class="dia-checkbox">
+                                <input type="checkbox" id="terca" value="2">
+                                <span>Ter</span>
+                            </label>
+                            <label class="dia-checkbox">
+                                <input type="checkbox" id="quarta" value="3">
+                                <span>Qua</span>
+                            </label>
+                            <label class="dia-checkbox">
+                                <input type="checkbox" id="quinta" value="4">
+                                <span>Qui</span>
+                            </label>
+                            <label class="dia-checkbox">
+                                <input type="checkbox" id="sexta" value="5">
+                                <span>Sex</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <label><i class="fas fa-hashtag"></i> Quantidade de Dias:</label>
+                        <input type="number" id="quantidade-dias" min="1" max="31" value="5" class="controle-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Horário -->
+            <div class="configuracoes-horario">
+                <h4><i class="fas fa-clock"></i> Configurações de Horário</h4>
+                <div class="horario-grid">
+                    <div class="horario-item">
+                        <label><i class="fas fa-clock"></i> Horas por Dia Útil:</label>
+                        <select id="horas-dia-util" class="controle-select">
+                            <option value="8">8 horas</option>
+                            <option value="9" selected>9 horas</option>
+                            <option value="10">10 horas</option>
+                        </select>
+                    </div>
+                    <div class="horario-item">
+                        <label><i class="fas fa-calendar-day"></i> Horas Sexta-feira:</label>
+                        <select id="horas-sexta" class="controle-select">
+                            <option value="8" selected>8 horas</option>
+                            <option value="9">9 horas</option>
+                            <option value="10">10 horas</option>
+                        </select>
+                    </div>
+                    <div class="horario-item">
+                        <label><i class="fas fa-sun"></i> Horário de Entrada:</label>
+                        <input type="time" id="horario-entrada" value="07:00" class="controle-input">
+                    </div>
+                    <div class="horario-item">
+                        <label><i class="fas fa-utensils"></i> Horário de Almoço:</label>
+                        <input type="time" id="horario-almoco" value="12:00" class="controle-input">
+                    </div>
+                    <div class="horario-item">
+                        <label><i class="fas fa-undo"></i> Retorno do Almoço:</label>
+                        <input type="time" id="horario-retorno" value="13:00" class="controle-input">
+                    </div>
+                    <div class="horario-item">
+                        <label><i class="fas fa-moon"></i> Horário de Saída:</label>
+                        <input type="time" id="horario-saida" value="17:00" class="controle-input">
+                    </div>
+                    <div class="horario-item">
+                        <label><i class="fas fa-calendar-day"></i> Saída Sexta-feira:</label>
+                        <input type="time" id="horario-saida-sexta" value="16:00" class="controle-input">
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,16 +340,20 @@
                     <thead>
                         <tr class="header-row">
                             <th>MÊS</th>
-                            <th colspan="4">APONTAMENTO</th>
+                            <th colspan="5">APONTAMENTO</th>
+                            <th colspan="2">TOTAIS</th>
                             <th colspan="2">DESCONTOS</th>
                         </tr>
                         <tr class="sub-header-row">
                             <th>MÊS/ANO<br><small>DIA</small></th>
                             <th>ENTRADA</th>
                             <th>ALMOÇO</th>
-                            <th>SAIDA</th>
+                            <th>RETORNO</th>
+                            <th>SAÍDA</th>
                             <th class="soma-diaria">SOMA DIARIA</th>
                             <th class="contrato">CONTRATO</th>
+                            <th class="horas-extra">HORAS EXTRA</th>
+                            <th class="adc-not">ADC NOT</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-principal">
@@ -193,24 +365,33 @@
                             <td>-</td>
                             <td>-</td>
                             <td>-</td>
+                            <td>-</td>
                             <td class="soma-diaria" id="total-soma-diaria"><strong>00:00</strong></td>
                             <td class="contrato" id="total-contrato"><strong>00:00</strong></td>
+                            <td class="horas-extra" id="total-horas-extra"><strong>00:00</strong></td>
+                            <td class="adc-not" id="total-adc-not"><strong>00:00</strong></td>
                         </tr>
                         <tr class="unit-row">
                             <td><strong>VALOR UNIT</strong></td>
                             <td>-</td>
                             <td>-</td>
                             <td>-</td>
+                            <td>-</td>
                             <td class="soma-diaria" id="valor-unit-hora"><strong>R$ 0,00</strong></td>
                             <td class="contrato" id="valor-unit-contrato"><strong>R$ 0,00</strong></td>
+                            <td class="horas-extra" id="valor-unit-horas-extra"><strong>R$ 0,00</strong></td>
+                            <td class="adc-not" id="valor-unit-adc-not"><strong>R$ 0,00</strong></td>
                         </tr>
                         <tr class="rs-total-row">
                             <td><strong>VALOR TOTAL</strong></td>
                             <td>-</td>
                             <td>-</td>
                             <td>-</td>
+                            <td>-</td>
                             <td class="soma-diaria" id="valor-total-soma"><strong>R$ 0,00</strong></td>
                             <td class="contrato" id="valor-total-contrato"><strong>R$ 0,00</strong></td>
+                            <td class="horas-extra" id="valor-total-horas-extra"><strong>R$ 0,00</strong></td>
+                            <td class="adc-not" id="valor-total-adc-not"><strong>R$ 0,00</strong></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -220,11 +401,11 @@
         <!-- Botões de Controle -->
         <div class="botoes-controle">
             <div class="botoes-grupo">
-                <button id="preencher-mes" class="btn-futurista">
-                    <i class="fas fa-calendar-alt"></i> 📅 Preencher Mês
+                <button id="gerar-medicao" class="btn-futurista">
+                    <i class="fas fa-magic"></i> 🎯 Gerar Medição
                 </button>
-                <button id="preencher-quinzena" class="btn-futurista">
-                    <i class="fas fa-calendar-week"></i> 📊 Preencher Quinzena
+                <button id="previsualizar" class="btn-futurista">
+                    <i class="fas fa-eye"></i> 👁️ Pré-visualizar
                 </button>
                 <button id="limpar-tabela" class="btn-secundario">
                     <i class="fas fa-trash"></i> 🗑️ Limpar Tabela
@@ -236,9 +417,6 @@
                 </button>
                 <button id="exportar-pdf" class="btn-futurista">
                     <i class="fas fa-file-pdf"></i> 📄 Exportar PDF
-                </button>
-                <button id="teste-pdf" class="btn-teste">
-                    <i class="fas fa-vial"></i> 🧪 Teste PDF
                 </button>
             </div>
         </div>
@@ -253,7 +431,16 @@
             </div>
             <div class="resumo-item">
                 <h4><i class="fas fa-minus-circle"></i> DESCONTOS</h4>
-                <p><strong>Combustível:</strong> <span id="total-combustivel">R$ 0,00</span></p>
+                <div class="desconto-item">
+                    <label><strong>Combustível:</strong></label>
+                    <input type="text" id="valor-combustivel" class="campo-editavel-desconto" value="0,00" placeholder="0,00" oninput="formatarMoedaInput(this); atualizarDescontos()">
+                    <span id="total-combustivel">R$ 0,00</span>
+                </div>
+                <div class="desconto-item">
+                    <label><strong>Outros Descontos:</strong></label>
+                    <input type="text" id="valor-outros-descontos" class="campo-editavel-desconto" value="0,00" placeholder="0,00" oninput="formatarMoedaInput(this); atualizarDescontos()">
+                    <span id="total-outros-descontos">R$ 0,00</span>
+                </div>
                 <p><strong>Total Descontos:</strong> <span id="total-descontos-final">R$ 0,00</span></p>
             </div>
             <div class="resumo-item total">
@@ -339,4 +526,4 @@
         updateConnectionStatus();
     </script>
 </body>
-</html> 
+</html> Do lado do equipamento
