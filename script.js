@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Atualizar interface
     atualizarInterface();
     
+    // Atualizar resumo final na inicialização
+    atualizarResumoFinal();
+    
     console.log('✅ Sistema inicializado com sucesso!');
 });
 
@@ -79,6 +82,55 @@ function configurarEventListeners() {
     
     // Configurar campo de valor do contrato
     configurarCampoValorContrato();
+    
+    // Configurar modo noturno
+    configurarModoNoturno();
+}
+
+// Configurar modo noturno
+function configurarModoNoturno() {
+    const btnToggleDarkMode = document.getElementById('toggle-dark-mode');
+    if (!btnToggleDarkMode) return;
+    
+    // Carregar preferência salva
+    const temaSalvo = localStorage.getItem('tema');
+    if (temaSalvo === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        atualizarIconeModoNoturno(true);
+    }
+    
+    // Event listener para alternar modo
+    btnToggleDarkMode.addEventListener('click', function() {
+        const temaAtual = document.documentElement.getAttribute('data-theme');
+        const isDark = temaAtual === 'dark';
+        
+        if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('tema', 'light');
+            atualizarIconeModoNoturno(false);
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('tema', 'dark');
+            atualizarIconeModoNoturno(true);
+        }
+    });
+}
+
+// Atualizar ícone do modo noturno
+function atualizarIconeModoNoturno(isDark) {
+    const btnToggleDarkMode = document.getElementById('toggle-dark-mode');
+    if (!btnToggleDarkMode) return;
+    
+    const icon = btnToggleDarkMode.querySelector('i');
+    if (icon) {
+        if (isDark) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        } else {
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+        }
+    }
 }
 
 // Configurar tipo de medição
@@ -128,6 +180,7 @@ function gerarMedicao() {
     }
     
     atualizarTabela();
+    atualizarResumoFinal(); // Garantir que o resumo seja atualizado após gerar medição
     salvarDados();
     mostrarNotificacao('Medição gerada com sucesso!', 'success');
 }
@@ -293,18 +346,21 @@ function gerarMedicaoPersonalizada() {
 
 // Criar lançamento padrão
 function criarLancamento(dataStr, dia, diaSemana) {
-    const horarioEntrada = document.getElementById('horario-entrada')?.value || '07:00';
-    const horarioAlmoco = document.getElementById('horario-almoco')?.value || '12:00';
-    const horarioRetorno = document.getElementById('horario-retorno')?.value || '13:00';
-    
     // Verificar se é sexta-feira para usar horário específico
     const data = new Date(dataStr);
     const diaSemanaIndex = data.getDay();
-    let horarioSaida;
     
-    if (diaSemanaIndex === 5) { // Sexta-feira
-        horarioSaida = document.getElementById('horario-saida-sexta')?.value || '16:00';
+    let horarioEntrada, horarioAlmoco, horarioRetorno, horarioSaida;
+    
+    if (diaSemanaIndex === 5) { // Sexta-feira - 8 horas trabalhadas (07:00 às 16:00)
+        horarioEntrada = '07:00';
+        horarioAlmoco = '12:00';
+        horarioRetorno = '13:00';
+        horarioSaida = '16:00';
     } else {
+        horarioEntrada = document.getElementById('horario-entrada')?.value || '07:00';
+        horarioAlmoco = document.getElementById('horario-almoco')?.value || '12:00';
+        horarioRetorno = document.getElementById('horario-retorno')?.value || '13:00';
         horarioSaida = document.getElementById('horario-saida')?.value || '17:00';
     }
     
@@ -432,32 +488,105 @@ function adicionarUmaHora(horario) {
     return `${novaHora.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
+// Obter porcentagem da hora
+function obterPorcentagemHora() {
+    const porcentagemInput = document.getElementById('porcentagem-hora');
+    if (!porcentagemInput) return 100;
+    const valor = parseFloat(porcentagemInput.value);
+    if (isNaN(valor) || valor <= 0) return 100;
+    return Math.max(0, Math.min(200, valor)); // Limitar entre 0% e 200%
+}
+
+// Obter tipo de medição formatado
+function obterTipoMedicaoFormatado() {
+    const tipoMedicao = document.querySelector('input[name="tipo-medicao"]:checked')?.value || 'mensal';
+    const tiposFormatados = {
+        'mensal': 'MENSAL',
+        'quinzenal': 'QUINZENAL',
+        'diaria': 'DIÁRIA',
+        'semanal': 'SEMANAL',
+        'personalizado': 'PERSONALIZADO'
+    };
+    return tiposFormatados[tipoMedicao] || 'MENSAL';
+}
+
+// Calcular valor por hora com porcentagem
+function calcularValorPorHora(valorContrato, totalHorasMinutos) {
+    if (!valorContrato || valorContrato <= 0 || !totalHorasMinutos || totalHorasMinutos <= 0) {
+        return 0;
+    }
+    const porcentagemHora = obterPorcentagemHora();
+    const valorPorHoraBase = valorContrato / (totalHorasMinutos / 60);
+    const valorPorHoraAjustado = valorPorHoraBase * (porcentagemHora / 100);
+    return isNaN(valorPorHoraAjustado) ? 0 : valorPorHoraAjustado;
+}
+
+// Obter valor unitário editável
+function obterValorUnitarioEditavel(id) {
+    const input = document.getElementById(id);
+    if (!input || !input.value) return null;
+    let valor = input.value.replace(/[^\d,.-]/g, '');
+    if (valor.includes('.') && valor.includes(',')) {
+        valor = valor.replace(/\./g, '').replace(',', '.');
+    } else if (valor.includes(',')) {
+        valor = valor.replace(',', '.');
+    }
+    const num = parseFloat(valor);
+    return isNaN(num) ? null : num;
+}
+
 // Atualizar totais
 function atualizarTotais() {
+    // Calcular totais de horas
     const totalHoras = lancamentos.reduce((acc, l) => {
+        if (!l || !l.horasTrabalhadas) return acc;
         const [h, m] = l.horasTrabalhadas.split(':').map(Number);
-        return acc + h * 60 + m;
+        return acc + (h || 0) * 60 + (m || 0);
     }, 0);
     
     const totalContrato = lancamentos.reduce((acc, l) => {
-        return acc + l.horasContrato * 60;
+        if (!l || !l.horasContrato) return acc;
+        return acc + (l.horasContrato || 0) * 60;
     }, 0);
     
     const totalHorasExtra = lancamentos.reduce((acc, l) => {
+        if (!l || !l.horasExtra) return acc;
         const [h, m] = l.horasExtra.split(':').map(Number);
-        return acc + h * 60 + m;
+        return acc + (h || 0) * 60 + (m || 0);
     }, 0);
     
     const totalAdcNot = lancamentos.reduce((acc, l) => {
+        if (!l || !l.adcNot) return acc;
         const [h, m] = l.adcNot.split(':').map(Number);
-        return acc + h * 60 + m;
+        return acc + (h || 0) * 60 + (m || 0);
     }, 0);
     
-    const valorContrato = obterValorContrato();
-    const valorPorHora = totalHoras > 0 ? valorContrato / (totalHoras / 60) : 0;
-    const valorUnitContrato = lancamentos.length > 0 ? valorContrato / lancamentos.length : 0;
-    const valorHorasExtra = (totalHorasExtra / 60) * (valorPorHora * 1.5); // 50% adicional
-    const valorAdcNot = (totalAdcNot / 60) * (valorPorHora * 0.2); // 20% adicional noturno
+    const valorContrato = obterValorContrato() || 0;
+    const porcentagemHora = obterPorcentagemHora();
+    const valorContratoAjustado = valorContrato * (porcentagemHora / 100);
+    const valorPorHora = totalHoras > 0 ? calcularValorPorHora(valorContrato, totalHoras) : 0;
+    const valorUnitContrato = lancamentos.length > 0 ? valorContratoAjustado / lancamentos.length : 0;
+    
+    // Obter valores unitários editáveis ou usar calculados
+    const valorUnitHoraEditavel = obterValorUnitarioEditavel('valor-unit-hora');
+    const valorUnitContratoEditavel = obterValorUnitarioEditavel('valor-unit-contrato');
+    const valorUnitHorasExtraEditavel = obterValorUnitarioEditavel('valor-unit-horas-extra');
+    const valorUnitAdcNotEditavel = obterValorUnitarioEditavel('valor-unit-adc-not');
+    
+    const valorPorHoraFinal = valorUnitHoraEditavel !== null ? valorUnitHoraEditavel : valorPorHora;
+    const valorUnitContratoFinal = valorUnitContratoEditavel !== null ? valorUnitContratoEditavel : valorUnitContrato;
+    // Calcular horas extras usando valor do contrato com porcentagem da hora
+    const valorPorHoraComPorcentagem = totalHoras > 0 ? valorContratoAjustado / (totalHoras / 60) : 0;
+    const valorUnitHorasExtraFinal = valorUnitHorasExtraEditavel !== null ? valorUnitHorasExtraEditavel : (valorPorHoraComPorcentagem * 1.5);
+    const valorUnitAdcNotFinal = valorUnitAdcNotEditavel !== null ? valorUnitAdcNotEditavel : (valorPorHoraComPorcentagem * 0.2);
+    
+    const valorHorasExtra = (totalHorasExtra / 60) * valorUnitHorasExtraFinal;
+    const valorAdcNot = (totalAdcNot / 60) * valorUnitAdcNotFinal;
+    
+    // Calcular valores totais usando os valores unitários
+    const valorTotalSomaCalculado = totalHoras > 0 ? valorPorHoraFinal * (totalHoras / 60) : 0;
+    // Usar valor do contrato ajustado com porcentagem da hora
+    const valorTotalContratoCalculado = lancamentos.length > 0 ? valorUnitContratoFinal * lancamentos.length : valorContratoAjustado;
     
     // Atualizar elementos da tabela
     const totalSomaDiaria = document.getElementById('total-soma-diaria');
@@ -491,28 +620,62 @@ function atualizarTotais() {
         totalAdcNotElement.innerHTML = `<strong>${formatarHora(totalAdcNot)}</strong>`;
     }
     
-    if (valorUnitHora) {
-        valorUnitHora.innerHTML = `<strong>${formatarMoeda(valorPorHora)}</strong>`;
+    // Atualizar campos editáveis apenas se não tiverem valor manual
+    if (valorUnitHora && valorUnitHora.tagName === 'INPUT') {
+        if (valorUnitHoraEditavel === null || valorUnitHora.value === '' || valorUnitHora.value === '0,00') {
+            const valorFormatado = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valorPorHora);
+            valorUnitHora.value = valorFormatado;
+        }
+    } else if (valorUnitHora) {
+        valorUnitHora.innerHTML = `<strong>${formatarMoeda(valorPorHoraFinal)}</strong>`;
     }
     
-    if (valorUnitContratoElement) {
-        valorUnitContratoElement.innerHTML = `<strong>${formatarMoeda(valorUnitContrato)}</strong>`;
+    if (valorUnitContratoElement && valorUnitContratoElement.tagName === 'INPUT') {
+        if (valorUnitContratoEditavel === null || valorUnitContratoElement.value === '' || valorUnitContratoElement.value === '0,00') {
+            const valorFormatado = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valorUnitContrato);
+            valorUnitContratoElement.value = valorFormatado;
+        }
+    } else if (valorUnitContratoElement) {
+        valorUnitContratoElement.innerHTML = `<strong>${formatarMoeda(valorUnitContratoFinal)}</strong>`;
     }
     
-    if (valorUnitHorasExtra) {
-        valorUnitHorasExtra.innerHTML = `<strong>${formatarMoeda(valorPorHora * 1.5)}</strong>`;
+    if (valorUnitHorasExtra && valorUnitHorasExtra.tagName === 'INPUT') {
+        if (valorUnitHorasExtraEditavel === null || valorUnitHorasExtra.value === '' || valorUnitHorasExtra.value === '0,00') {
+            const valorFormatado = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valorUnitHorasExtraFinal);
+            valorUnitHorasExtra.value = valorFormatado;
+        }
+    } else if (valorUnitHorasExtra) {
+        valorUnitHorasExtra.innerHTML = `<strong>${formatarMoeda(valorUnitHorasExtraFinal)}</strong>`;
     }
     
-    if (valorUnitAdcNot) {
-        valorUnitAdcNot.innerHTML = `<strong>${formatarMoeda(valorPorHora * 0.2)}</strong>`;
+    if (valorUnitAdcNot && valorUnitAdcNot.tagName === 'INPUT') {
+        if (valorUnitAdcNotEditavel === null || valorUnitAdcNot.value === '' || valorUnitAdcNot.value === '0,00') {
+            const valorFormatado = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(valorUnitAdcNotFinal);
+            valorUnitAdcNot.value = valorFormatado;
+        }
+    } else if (valorUnitAdcNot) {
+        valorUnitAdcNot.innerHTML = `<strong>${formatarMoeda(valorUnitAdcNotFinal)}</strong>`;
     }
     
+    // Atualizar valores totais calculados
     if (valorTotalSoma) {
-        valorTotalSoma.innerHTML = `<strong>${formatarMoeda(valorContrato)}</strong>`;
+        valorTotalSoma.innerHTML = `<strong>${formatarMoeda(valorTotalSomaCalculado)}</strong>`;
     }
     
     if (valorTotalContrato) {
-        valorTotalContrato.innerHTML = `<strong>${formatarMoeda(valorContrato)}</strong>`;
+        valorTotalContrato.innerHTML = `<strong>${formatarMoeda(valorTotalContratoCalculado)}</strong>`;
     }
     
     if (valorTotalHorasExtra) {
@@ -529,34 +692,102 @@ function atualizarTotais() {
 
 // Atualizar resumo final
 function atualizarResumoFinal() {
-    const totalHoras = lancamentos.reduce((acc, l) => {
-        const [h, m] = l.horasTrabalhadas.split(':').map(Number);
-        return acc + h * 60 + m;
+    try {
+        // Calcular totais de horas
+        const totalHoras = lancamentos.reduce((acc, l) => {
+            if (!l || !l.horasTrabalhadas) return acc;
+            const [h, m] = l.horasTrabalhadas.split(':').map(Number);
+            return acc + (h || 0) * 60 + (m || 0);
         }, 0);
-    
-        const valorContrato = obterValorContrato();
-    const totalDescontos = obterTotalDescontos();
-    const valorFinal = valorContrato - totalDescontos;
-    
-    const totalHorasFinal = document.getElementById('total-horas-final');
-    const totalDiasFinal = document.getElementById('total-dias-final');
-    const valorTotalFinal = document.getElementById('valor-total-final');
-    const totalMedicaoFinal = document.getElementById('total-medicao-final');
-    
-    if (totalHorasFinal) {
-        totalHorasFinal.textContent = formatarHora(totalHoras);
-    }
-    
-    if (totalDiasFinal) {
-        totalDiasFinal.textContent = lancamentos.length;
-    }
-    
-    if (valorTotalFinal) {
-        valorTotalFinal.textContent = formatarMoeda(valorContrato);
-    }
-    
-    if (totalMedicaoFinal) {
-        totalMedicaoFinal.textContent = formatarMoeda(valorFinal);
+        
+        // Obter valores da tabela se disponíveis, senão calcular
+        const valorTotalSomaElement = document.getElementById('valor-total-soma');
+        const valorTotalContratoElement = document.getElementById('valor-total-contrato');
+        const valorTotalHorasExtraElement = document.getElementById('valor-total-horas-extra');
+        const valorTotalAdcNotElement = document.getElementById('valor-total-adc-not');
+        
+        let valorTotalContratoCalculado = 0;
+        if (valorTotalContratoElement) {
+            const texto = valorTotalContratoElement.textContent || valorTotalContratoElement.innerText || '';
+            // Remover R$, espaços e outros caracteres não numéricos
+            let valorTexto = texto.replace(/[R$\s]/g, '');
+            
+            // Se tem ponto como separador de milhares e vírgula como decimal
+            if (valorTexto.includes('.') && valorTexto.includes(',')) {
+                // Remover pontos (separadores de milhares) e substituir vírgula por ponto
+                valorTexto = valorTexto.replace(/\./g, '').replace(',', '.');
+            } else if (valorTexto.includes(',')) {
+                // Se tem apenas vírgula, substituir por ponto
+                valorTexto = valorTexto.replace(',', '.');
+            }
+            
+            valorTotalContratoCalculado = parseFloat(valorTexto) || 0;
+        }
+        
+        // Se não tiver valor da tabela ou se o valor for 0 ou muito pequeno (menor que 1), calcular baseado no valor do contrato
+        if (!valorTotalContratoElement || valorTotalContratoCalculado < 1) {
+            const valorContrato = obterValorContrato() || 0;
+            const porcentagemHora = obterPorcentagemHora();
+            // Valor total = valor do contrato ajustado pela porcentagem da hora (sem dividir por dias)
+            valorTotalContratoCalculado = valorContrato * (porcentagemHora / 100);
+        }
+        
+        const valorHorasExtrasManual = obterValorHorasExtrasManual() || 0;
+        const valorAdcNoturnoManual = obterValorAdcNoturnoManual() || 0;
+        const totalDescontos = obterTotalDescontos() || 0;
+        const totalMobilizacao = obterTotalMobilizacao() || 0;
+        const valorFinal = valorTotalContratoCalculado + valorHorasExtrasManual + valorAdcNoturnoManual + totalMobilizacao - totalDescontos;
+        
+        const totalHorasFinal = document.getElementById('total-horas-final');
+        const totalDiasFinal = document.getElementById('total-dias-final');
+        const valorTotalFinal = document.getElementById('valor-total-final');
+        const totalMedicaoFinal = document.getElementById('total-medicao-final');
+        const totalHorasExtrasManualSpan = document.getElementById('total-horas-extras-manual');
+        const totalAdcNoturnoManualSpan = document.getElementById('total-adc-noturno-manual');
+        
+        // Atualizar campos da seção MEDIÇÃO
+        if (totalHorasFinal) {
+            totalHorasFinal.textContent = formatarHora(totalHoras);
+        } else {
+            console.warn('Elemento total-horas-final não encontrado');
+        }
+        
+        if (totalDiasFinal) {
+            totalDiasFinal.textContent = lancamentos.length || 0;
+        } else {
+            console.warn('Elemento total-dias-final não encontrado');
+        }
+        
+        if (valorTotalFinal) {
+            valorTotalFinal.textContent = formatarMoeda(valorTotalContratoCalculado);
+        } else {
+            console.warn('Elemento valor-total-final não encontrado');
+        }
+        
+        if (totalHorasExtrasManualSpan) {
+            totalHorasExtrasManualSpan.textContent = formatarMoeda(valorHorasExtrasManual);
+        }
+        
+        if (totalAdcNoturnoManualSpan) {
+            totalAdcNoturnoManualSpan.textContent = formatarMoeda(valorAdcNoturnoManual);
+        }
+        
+        if (totalMedicaoFinal) {
+            totalMedicaoFinal.textContent = formatarMoeda(Math.max(0, valorFinal));
+        }
+        
+        // Debug: log dos valores calculados
+        console.log('📊 Resumo Final atualizado:', {
+            totalHoras: formatarHora(totalHoras),
+            totalDias: lancamentos.length,
+            valorContrato: obterValorContrato(),
+            porcentagemHora: obterPorcentagemHora(),
+            valorTotalContrato: formatarMoeda(valorTotalContratoCalculado),
+            valorFinal: formatarMoeda(valorFinal),
+            valorTabela: valorTotalContratoElement ? (valorTotalContratoElement.textContent || valorTotalContratoElement.innerText) : 'não encontrado'
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar resumo final:', error);
     }
 }
 
@@ -610,6 +841,67 @@ function atualizarDescontos() {
     atualizarResumoFinal();
 }
 
+// Obter valor manual de horas extras
+function obterValorHorasExtrasManual() {
+    const valorInput = document.getElementById('valor-horas-extras-manual');
+    if (!valorInput || !valorInput.value) return 0;
+    let valor = valorInput.value.replace(/[^\d,.-]/g, '');
+    if (valor.includes('.') && valor.includes(',')) {
+        valor = valor.replace(/\./g, '').replace(',', '.');
+    } else if (valor.includes(',')) {
+        valor = valor.replace(',', '.');
+    }
+    const num = parseFloat(valor);
+    return isNaN(num) ? 0 : num;
+}
+
+// Obter valor manual de ADC noturno
+function obterValorAdcNoturnoManual() {
+    const valorInput = document.getElementById('valor-adc-noturno-manual');
+    if (!valorInput || !valorInput.value) return 0;
+    let valor = valorInput.value.replace(/[^\d,.-]/g, '');
+    if (valor.includes('.') && valor.includes(',')) {
+        valor = valor.replace(/\./g, '').replace(',', '.');
+    } else if (valor.includes(',')) {
+        valor = valor.replace(',', '.');
+    }
+    const num = parseFloat(valor);
+    return isNaN(num) ? 0 : num;
+}
+
+// Obter valor de mobilização ida
+function obterMobilizacaoIda() {
+    const valorInput = document.getElementById('mobilizacao-ida');
+    if (!valorInput || !valorInput.value) return 0;
+    let valor = valorInput.value.replace(/[^\d,.-]/g, '');
+    if (valor.includes('.') && valor.includes(',')) {
+        valor = valor.replace(/\./g, '').replace(',', '.');
+    } else if (valor.includes(',')) {
+        valor = valor.replace(',', '.');
+    }
+    const num = parseFloat(valor);
+    return isNaN(num) ? 0 : num;
+}
+
+// Obter valor de mobilização volta
+function obterMobilizacaoVolta() {
+    const valorInput = document.getElementById('mobilizacao-volta');
+    if (!valorInput || !valorInput.value) return 0;
+    let valor = valorInput.value.replace(/[^\d,.-]/g, '');
+    if (valor.includes('.') && valor.includes(',')) {
+        valor = valor.replace(/\./g, '').replace(',', '.');
+    } else if (valor.includes(',')) {
+        valor = valor.replace(',', '.');
+    }
+    const num = parseFloat(valor);
+    return isNaN(num) ? 0 : num;
+}
+
+// Obter total de mobilização
+function obterTotalMobilizacao() {
+    return obterMobilizacaoIda() + obterMobilizacaoVolta();
+}
+
 // Atualizar data do lançamento
 function atualizarDataLancamento(index, novaData) {
     if (index >= 0 && index < lancamentos.length) {
@@ -623,13 +915,26 @@ function atualizarDataLancamento(index, novaData) {
         const diaSemanaIndex = data.getDay();
         lancamentos[index].horasContrato = obterHorasContrato(diaSemanaIndex);
         
-        // Atualizar horário de saída se necessário (sexta-feira)
+        // Atualizar horários se for sexta-feira (8 horas: 07:00 às 16:00)
         if (diaSemanaIndex === 5) { // Sexta-feira
-            const horarioSaidaSexta = document.getElementById('horario-saida-sexta')?.value || '16:00';
-            lancamentos[index].saida = horarioSaidaSexta;
+            lancamentos[index].entrada = '07:00';
+            lancamentos[index].almoco = '12:00';
+            lancamentos[index].retorno = '13:00';
+            lancamentos[index].saida = '16:00';
         } else {
-            const horarioSaida = document.getElementById('horario-saida')?.value || '17:00';
-            lancamentos[index].saida = horarioSaida;
+            // Manter horários existentes ou usar padrão
+            if (!lancamentos[index].entrada) {
+                lancamentos[index].entrada = document.getElementById('horario-entrada')?.value || '07:00';
+            }
+            if (!lancamentos[index].almoco) {
+                lancamentos[index].almoco = document.getElementById('horario-almoco')?.value || '12:00';
+            }
+            if (!lancamentos[index].retorno) {
+                lancamentos[index].retorno = document.getElementById('horario-retorno')?.value || '13:00';
+            }
+            if (!lancamentos[index].saida) {
+                lancamentos[index].saida = document.getElementById('horario-saida')?.value || '17:00';
+            }
         }
         
         // Recalcular horas trabalhadas
@@ -830,13 +1135,17 @@ async function exportarPDF() {
     const ruaEmpresa = document.getElementById('rua-empresa')?.value || 'Rua Desembargador Auro Cerqueira Leite, 36';
     const cidadeEmpresa = document.getElementById('cidade-empresa')?.value || 'Cidade Kemel - São Paulo, SP';
     const cepEmpresa = document.getElementById('cep-empresa')?.value || '08130-410';
+    const cnpjCliente = document.getElementById('cnpj-cliente')?.value || '';
     const equipamento = obterEquipamento();
     const nomeContrato = document.getElementById('nome-contrato')?.value || 'Cons Vila Romana';
     const valorContrato = obterValorContrato();
-    const tipoContrato = document.getElementById('tipo-contrato')?.value || 'MENSAL';
-    const periodo = document.getElementById('periodo')?.value || '';
-    const divisaoContrato = document.getElementById('divisao-contrato')?.value || 'mes';
+    const tipoMedicao = obterTipoMedicaoFormatado();
     const operador = document.getElementById('operador')?.value || 'ANTONIO PEREIRA';
+    const valorHorasExtrasManual = obterValorHorasExtrasManual();
+    const valorAdcNoturnoManual = obterValorAdcNoturnoManual();
+    const mobilizacaoIda = obterMobilizacaoIda();
+    const mobilizacaoVolta = obterMobilizacaoVolta();
+    const totalMobilizacao = obterTotalMobilizacao();
     
         // Cabeçalho profissional com sua imagem PNG personalizada
         console.log('🔄 Carregando sua imagem PNG para o PDF...');
@@ -858,8 +1167,12 @@ async function exportarPDF() {
                     const dataURL = canvas.toDataURL('image/png');
                     console.log('✅ Convertendo para DataURL...');
                     
-                    // Adicionar imagem ao PDF
-                    doc.addImage(dataURL, 'PNG', pageWidth / 2 - 10, 5, 20, 20);
+                    // Adicionar imagem ao PDF (centralizada e maior)
+                    const logoWidth = 30;
+                    const logoHeight = 30;
+                    const logoX = pageWidth / 2 - logoWidth / 2;
+                    const logoY = 8;
+                    doc.addImage(dataURL, 'PNG', logoX, logoY, logoWidth, logoHeight);
                     console.log('✅ Sua imagem PNG foi adicionada ao PDF!');
                     resolve();
                 } catch (error) {
@@ -877,60 +1190,83 @@ async function exportarPDF() {
             img.src = 'images/gerar_icone.png';
         });
         
-        // Título principal
+        // Título principal (abaixo do logo)
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
-        doc.text('CONTROLE DE MEDIÇÃO', pageWidth / 2, 30, { align: 'center' });
+        doc.text('CONTROLE DE MEDIÇÃO', pageWidth / 2, 45, { align: 'center' });
+        
+        // Nome da empresa
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text('M.A VIANA LOCAÇÕES E SERVIÇOS - ME', pageWidth / 2, 50, { align: 'center' });
         
         // Linha separadora elegante
         doc.setDrawColor(0, 123, 255);
         doc.setLineWidth(1);
-        doc.line(margin, 35, pageWidth - margin, 35);
+        doc.line(margin, 53, pageWidth - margin, 53);
         
         // Informações da empresa (lado esquerdo) - mais organizadas
         doc.setFontSize(8);
         doc.setFont(undefined, 'bold');
-        doc.text('DADOS DA EMPRESA', margin, 42);
+        doc.text('DADOS DA EMPRESA', margin, 60);
         
         doc.setFontSize(7);
         doc.setFont(undefined, 'normal');
-        doc.text(`CNPJ: ${cnpjEmpresa}`, margin, 47);
-        doc.text(ruaEmpresa, margin, 51);
-        doc.text(cidadeEmpresa, margin, 55);
-        doc.text(`CEP: ${cepEmpresa}`, margin, 59);
+        doc.text(`CNPJ: ${cnpjEmpresa}`, margin, 65);
+        doc.text(ruaEmpresa, margin, 69);
+        doc.text(cidadeEmpresa, margin, 73);
+        doc.text(`CEP: ${cepEmpresa}`, margin, 77);
         
         // Caixa OBRA (lado direito) - mais elegante
         doc.setFillColor(248, 249, 250);
-        doc.rect(margin + 100, 38, 90, 25, 'F');
+        doc.rect(margin + 100, 58, 90, 25, 'F');
         doc.setDrawColor(0, 123, 255);
         doc.setLineWidth(0.5);
-        doc.rect(margin + 100, 38, 90, 25, 'S');
+        doc.rect(margin + 100, 58, 90, 25, 'S');
         
         doc.setFontSize(8);
         doc.setFont(undefined, 'bold');
-        doc.text('DADOS DA OBRA', margin + 105, 44);
+        doc.text('DADOS DA OBRA', margin + 105, 64);
         
         doc.setFontSize(7);
         doc.setFont(undefined, 'normal');
-        doc.text(`Equipamento: ${equipamento}`, margin + 105, 49);
-        doc.text(`Contrato: ${formatarMoeda(valorContrato)}`, margin + 105, 53);
-        doc.text(`Tipo: ${tipoContrato}`, margin + 105, 57);
-        doc.text(`Período: ${periodo || 'SETEMBRO/2025'}`, margin + 105, 61);
+        doc.text(`Equipamento: ${equipamento}`, margin + 105, 69);
+        doc.text(`Contrato: ${formatarMoeda(valorContrato)}`, margin + 105, 73);
+        doc.text(`Tipo: ${tipoMedicao}`, margin + 105, 77);
         
-        // Informações da obra (mais elegantes)
+        // Seção DADOS DO CLIENTE
         doc.setFontSize(8);
         doc.setFont(undefined, 'bold');
-        doc.text('CLIENTE', margin, 65);
+        doc.text('DADOS DO CLIENTE', margin, 85);
         doc.setFont(undefined, 'normal');
-        doc.text(`${nomeContrato}`, margin, 70);
+        doc.setFontSize(7);
+        if (cnpjCliente) {
+            doc.text(`CNPJ Cliente: ${cnpjCliente}`, margin, 90);
+        }
+        doc.text(`Nome do Contrato/Empresa: ${nomeContrato}`, margin, 94);
         
         if (enderecoObra) {
-            doc.text(`Endereço: ${enderecoObra}`, margin, 74);
+            doc.text(`Endereço: ${enderecoObra}`, margin, 98);
         }
+        
+        // Seção MOBILIZAÇÃO
+        let mobilizacaoY = 98;
+        if (enderecoObra) {
+            mobilizacaoY = 102;
+        }
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'bold');
+        doc.text('MOBILIZAÇÃO', margin, mobilizacaoY);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(7);
+        doc.text(`Mobilização Ida: ${formatarMoeda(mobilizacaoIda)}`, margin, mobilizacaoY + 4);
+        doc.text(`Mobilização Volta: ${formatarMoeda(mobilizacaoVolta)}`, margin, mobilizacaoY + 8);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Total de Mobilização: ${formatarMoeda(totalMobilizacao)}`, margin, mobilizacaoY + 12);
     
     // Cabeçalho da tabela profissional
-    const tableY = 80;
+    let tableY = mobilizacaoY + 18;
     
     // Cabeçalho principal com gradiente simulado
     doc.setFillColor(0, 123, 255);
@@ -978,62 +1314,65 @@ async function exportarPDF() {
     let currentY = tableY + 16;
     const maxY = pageHeight - 80;
     
-    // Gerar todos os dias do mês (1 a 30/31)
-    const dataReferencia = new Date();
-    const mesAtual = dataReferencia.getMonth() + 1;
-    const anoAtual = dataReferencia.getFullYear();
-    const diasNoMes = new Date(anoAtual, mesAtual, 0).getDate();
+    // Gerar apenas os dias que têm lançamentos
+    // Ordenar lançamentos por dia
+    const lancamentosOrdenados = [...lancamentos].sort((a, b) => a.dia - b.dia);
     
-    for (let dia = 1; dia <= diasNoMes; dia++) {
-        // Verificar se precisa de nova página
-        if (currentY > maxY) {
-            doc.addPage();
-            currentY = 20;
+    // Se não houver lançamentos, não gerar tabela
+    if (lancamentosOrdenados.length === 0) {
+        doc.text('Nenhum lançamento encontrado', margin, tableY + 20);
+    } else {
+        // Usar o mês do primeiro lançamento
+        let mesAtual = mesReferencia || new Date().getMonth() + 1;
+        let anoAtual = anoReferencia || new Date().getFullYear();
+        
+        if (lancamentosOrdenados[0].data) {
+            const [ano, mes] = lancamentosOrdenados[0].data.split('-');
+            anoAtual = parseInt(ano);
+            mesAtual = parseInt(mes);
         }
         
-        const dataStr = `${anoAtual}-${mesAtual.toString().padStart(2, '0')}-${dia.toString().padStart(2, '0')}`;
-        const data = new Date(anoAtual, mesAtual - 1, dia);
-        const diaSemana = data.getDay();
-        const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-        const diaSemanaNome = diasSemana[diaSemana];
-        
-        // Encontrar lançamento correspondente
-        const lancamento = lancamentos.find(l => l.dia === dia);
-        
-        // Fundo da linha com design profissional
-        if (diaSemana === 0 || diaSemana === 6) {
-            // Fins de semana com fundo cinza claro
-            doc.setFillColor(248, 249, 250);
-        } else {
-            // Dias úteis com fundo branco
-            doc.setFillColor(255, 255, 255);
-        }
-        doc.rect(margin, currentY - 1, pageWidth - 2 * margin, rowHeight, 'F');
-        
-        // Borda da linha elegante
-        doc.setDrawColor(220, 220, 220);
-        doc.setLineWidth(0.2);
-        doc.rect(margin, currentY - 1, pageWidth - 2 * margin, rowHeight, 'S');
-        
-        // Coluna MÊS - formato "03 sex"
-        doc.text(`${dia.toString().padStart(2, '0')} ${diaSemanaNome.toLowerCase()}`, margin + 1, currentY + 2);
-        
-        if (lancamento) {
+        // Gerar apenas os dias com lançamentos
+        for (const lancamento of lancamentosOrdenados) {
+            // Verificar se precisa de nova página
+            if (currentY > maxY) {
+                doc.addPage();
+                currentY = 20;
+            }
+            
+            // Obter dados do lançamento
+            const [ano, mes, dia] = lancamento.data.split('-');
+            const data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+            const diaSemana = data.getDay();
+            const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+            const diaSemanaNome = diasSemana[diaSemana];
+            
+            // Fundo da linha com design profissional
+            if (diaSemana === 0 || diaSemana === 6) {
+                // Fins de semana com fundo cinza claro
+                doc.setFillColor(248, 249, 250);
+            } else {
+                // Dias úteis com fundo branco
+                doc.setFillColor(255, 255, 255);
+            }
+            doc.rect(margin, currentY - 1, pageWidth - 2 * margin, rowHeight, 'F');
+            
+            // Borda da linha elegante
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.2);
+            doc.rect(margin, currentY - 1, pageWidth - 2 * margin, rowHeight, 'S');
+            
+            // Coluna MÊS - formato "03 sex"
+            doc.text(`${parseInt(dia).toString().padStart(2, '0')} ${diaSemanaNome.toLowerCase()}`, margin + 1, currentY + 2);
+            
             // Colunas APONTAMENTO com design melhorado
             doc.setFont(undefined, 'bold');
-            doc.text(lancamento.entrada, margin + 25, currentY + 2);
-            doc.text(lancamento.almoco, margin + 45, currentY + 2);
-            doc.text(lancamento.saida, margin + 65, currentY + 2);
-            doc.text(lancamento.horasTrabalhadas, margin + 85, currentY + 2);
-            doc.text(`${lancamento.horasContrato}:00`, margin + 105, currentY + 2);
+            doc.text(lancamento.entrada || '00:00', margin + 25, currentY + 2);
+            doc.text(lancamento.almoco || '00:00', margin + 45, currentY + 2);
+            doc.text(lancamento.saida || '00:00', margin + 65, currentY + 2);
+            doc.text(lancamento.horasTrabalhadas || '00:00', margin + 85, currentY + 2);
+            doc.text(`${lancamento.horasContrato || 0}:00`, margin + 105, currentY + 2);
             doc.setFont(undefined, 'normal');
-            
-            // Calcular horas extras (horas trabalhadas - horas contrato)
-            const [hTrab, mTrab] = lancamento.horasTrabalhadas.split(':').map(Number);
-            const totalTrabMin = hTrab * 60 + mTrab;
-            const totalContMin = lancamento.horasContrato * 60;
-            const horasExtrasMin = Math.max(0, totalTrabMin - totalContMin);
-            const horasExtras = `${Math.floor(horasExtrasMin / 60).toString().padStart(2, '0')}:${(horasExtrasMin % 60).toString().padStart(2, '0')}:00`;
             
             // Colunas DESCONTOS com cores profissionais
             // Coluna HORAS EXTRA - fundo azul claro
@@ -1042,7 +1381,7 @@ async function exportarPDF() {
             doc.setDrawColor(0, 123, 255);
             doc.setLineWidth(0.2);
             doc.rect(margin + 120, currentY - 1, 15, rowHeight, 'S');
-            doc.text(lancamento.horasExtra, margin + 122, currentY + 2);
+            doc.text(lancamento.horasExtra || '00:00', margin + 122, currentY + 2);
             
             // Coluna ADC NOT - fundo verde claro
             doc.setFillColor(230, 255, 230);
@@ -1050,7 +1389,7 @@ async function exportarPDF() {
             doc.setDrawColor(40, 167, 69);
             doc.setLineWidth(0.2);
             doc.rect(margin + 140, currentY - 1, 15, rowHeight, 'S');
-            doc.text(lancamento.adcNot, margin + 142, currentY + 2);
+            doc.text(lancamento.adcNot || '00:00', margin + 142, currentY + 2);
             
             // Coluna HORAS - fundo amarelo claro
             doc.setFillColor(255, 248, 220);
@@ -1062,27 +1401,9 @@ async function exportarPDF() {
             
             // Coluna DIARIA
             doc.text('0,00', margin + 175, currentY + 2);
-        } else {
-            // Dia sem lançamento (fim de semana ou feriado)
-            if (diaSemana === 0 || diaSemana === 6) {
-                // Deixar vazio para domingos e sábados
-            } else {
-                // Preencher com traços para dias úteis sem lançamento
-                doc.setTextColor(150, 150, 150);
-                doc.text('-', margin + 25, currentY + 2);
-                doc.text('-', margin + 45, currentY + 2);
-                doc.text('-', margin + 65, currentY + 2);
-                doc.text('-', margin + 85, currentY + 2);
-                doc.text('-', margin + 105, currentY + 2);
-                doc.text('-', margin + 122, currentY + 2);
-                doc.text('-', margin + 142, currentY + 2);
-                doc.text('-', margin + 162, currentY + 2);
-                doc.text('-', margin + 175, currentY + 2);
-                doc.setTextColor(0, 0, 0);
-            }
+            
+            currentY += rowHeight;
         }
-        
-        currentY += rowHeight;
     }
     
     // Linhas de totais compactas
@@ -1090,30 +1411,39 @@ async function exportarPDF() {
     
     // Calcular totais
     const totalHoras = lancamentos.reduce((acc, l) => {
+        if (!l || !l.horasTrabalhadas) return acc;
         const [h, m] = l.horasTrabalhadas.split(':').map(Number);
-        return acc + h * 60 + m;
+        return acc + (h || 0) * 60 + (m || 0);
     }, 0);
     
     const totalContrato = lancamentos.reduce((acc, l) => {
-        return acc + l.horasContrato * 60;
+        if (!l || !l.horasContrato) return acc;
+        return acc + (l.horasContrato || 0) * 60;
     }, 0);
     
     const totalHorasExtras = lancamentos.reduce((acc, l) => {
+        if (!l || !l.horasTrabalhadas || !l.horasContrato) return acc;
         const [hTrab, mTrab] = l.horasTrabalhadas.split(':').map(Number);
-        const totalTrabMin = hTrab * 60 + mTrab;
-        const totalContMin = l.horasContrato * 60;
+        const totalTrabMin = (hTrab || 0) * 60 + (mTrab || 0);
+        const totalContMin = (l.horasContrato || 0) * 60;
         return acc + Math.max(0, totalTrabMin - totalContMin);
     }, 0);
     
     const totalAdcNot = lancamentos.reduce((acc, l) => {
+        if (!l || !l.adcNot) return acc;
         const [h, m] = l.adcNot.split(':').map(Number);
-        return acc + h * 60 + m;
+        return acc + (h || 0) * 60 + (m || 0);
     }, 0);
     
-    const valorPorHora = totalHoras > 0 ? valorContrato / (totalHoras / 60) : 0;
+    const porcentagemHora = obterPorcentagemHora();
+    const valorContratoAjustado = valorContrato * (porcentagemHora / 100);
+    const valorPorHora = calcularValorPorHora(valorContrato, totalHoras);
     const valorTotal = valorPorHora * (totalHoras / 60);
-    const valorHorasExtra = (totalHorasExtras / 60) * (valorPorHora * 1.5); // 50% adicional
-    const valorAdcNot = (totalAdcNot / 60) * (valorPorHora * 0.2); // 20% adicional noturno
+    // Calcular valor por hora com porcentagem para horas extras
+    const valorPorHoraComPorcentagem = totalHoras > 0 ? valorContratoAjustado / (totalHoras / 60) : 0;
+    // Usar valores manuais se disponíveis, senão usar valor do contrato com porcentagem da hora
+    const valorHorasExtra = valorHorasExtrasManual > 0 ? valorHorasExtrasManual : ((totalHorasExtras / 60) * (valorPorHoraComPorcentagem * 1.5));
+    const valorAdcNot = valorAdcNoturnoManual > 0 ? valorAdcNoturnoManual : ((totalAdcNot / 60) * (valorPorHoraComPorcentagem * 0.2));
     
     // Linha TOTAL com design profissional
     doc.setFillColor(0, 123, 255);
@@ -1148,8 +1478,8 @@ async function exportarPDF() {
     doc.text('UNIT', margin + 3, currentY + 2);
     doc.text(formatarMoeda(valorPorHora), margin + 85, currentY + 2);
     doc.text(formatarMoeda(valorPorHora), margin + 105, currentY + 2);
-    doc.text(formatarMoeda(valorPorHora * 1.5), margin + 122, currentY + 2);
-    doc.text(formatarMoeda(valorPorHora * 0.2), margin + 142, currentY + 2);
+    doc.text(formatarMoeda(valorPorHoraComPorcentagem * 1.5), margin + 122, currentY + 2);
+    doc.text(formatarMoeda(valorPorHoraComPorcentagem * 0.2), margin + 142, currentY + 2);
     doc.text('0,00', margin + 162, currentY + 2);
     doc.text('0,00', margin + 175, currentY + 2);
     
@@ -1167,7 +1497,7 @@ async function exportarPDF() {
     doc.setFont(undefined, 'bold');
     doc.text('R$ TOTAL', margin + 3, currentY + 2);
     doc.text(formatarMoeda(valorTotal), margin + 85, currentY + 2);
-    doc.text(formatarMoeda(valorContrato), margin + 105, currentY + 2);
+    doc.text(formatarMoeda(valorContratoAjustado), margin + 105, currentY + 2);
     doc.text(formatarMoeda(valorHorasExtra), margin + 122, currentY + 2);
     doc.text(formatarMoeda(valorAdcNot), margin + 142, currentY + 2);
     doc.text('0,00', margin + 162, currentY + 2);
@@ -1190,14 +1520,18 @@ async function exportarPDF() {
     doc.setTextColor(0, 0, 0); // Preto
     doc.setFontSize(6);
     doc.setFont(undefined, 'normal');
-    doc.text(`${periodo || 'SETEMBRO/2025'}: ${formatarMoeda(valorContrato)}`, margin + 3, currentY + 8);
-    doc.text(`HORAS EXTRAS: ${formatarMoeda(valorHorasExtra)}`, margin + 3, currentY + 11);
-    doc.text(`ADC NOTURNO: ${formatarMoeda(valorAdcNot)}`, margin + 3, currentY + 14);
+    doc.text(`${tipoMedicao}: ${formatarMoeda(valorContratoAjustado)}`, margin + 3, currentY + 8);
+    doc.text(`HORAS EXTRAS: ${formatarMoeda(valorHorasExtrasManual)}`, margin + 3, currentY + 11);
+    doc.text(`ADC NOTURNO: ${formatarMoeda(valorAdcNoturnoManual)}`, margin + 3, currentY + 14);
+    if (totalMobilizacao > 0) {
+        doc.text(`MOBILIZAÇÃO: ${formatarMoeda(totalMobilizacao)}`, margin + 3, currentY + 17);
+    }
     
-    const totalMedicao = valorContrato + valorHorasExtra + valorAdcNot;
+    const totalMedicao = valorContratoAjustado + valorHorasExtrasManual + valorAdcNoturnoManual + totalMobilizacao;
     doc.setFont(undefined, 'bold');
     doc.setFontSize(7);
-    doc.text(`TOTAL R$ ${formatarMoeda(totalMedicao)}`, margin + 3, currentY + 17);
+    const totalY = totalMobilizacao > 0 ? currentY + 20 : currentY + 17;
+    doc.text(`TOTAL R$ ${formatarMoeda(totalMedicao)}`, margin + 3, totalY);
     
     // Caixa DESCONTOS (centro) - laranja
     doc.setFillColor(255, 248, 220);
@@ -1324,63 +1658,6 @@ function configurarAssinatura() {
         desenhando = false;
     });
     
-    // Botões de assinatura
-    const btnLimpar = document.getElementById('limpar-assinatura');
-    const btnSalvar = document.getElementById('salvar-assinatura');
-    const btnExportar = document.getElementById('exportar-assinatura');
-    const btnImportar = document.getElementById('importar-assinatura');
-    const arquivoAssinatura = document.getElementById('arquivo-assinatura');
-    
-    if (btnLimpar) {
-        btnLimpar.addEventListener('click', () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            mostrarNotificacao('Assinatura limpa!', 'info');
-        });
-    }
-    
-    if (btnSalvar) {
-        btnSalvar.addEventListener('click', () => {
-            const dataURL = canvas.toDataURL();
-            localStorage.setItem('assinatura', dataURL);
-            mostrarNotificacao('Assinatura salva!', 'success');
-        });
-    }
-    
-    if (btnExportar) {
-        btnExportar.addEventListener('click', () => {
-            const dataURL = canvas.toDataURL();
-            const link = document.createElement('a');
-            link.download = 'assinatura.png';
-            link.href = dataURL;
-            link.click();
-            mostrarNotificacao('Assinatura exportada!', 'success');
-        });
-    }
-    
-    if (btnImportar) {
-        btnImportar.addEventListener('click', () => {
-            arquivoAssinatura.click();
-        });
-    }
-    
-    if (arquivoAssinatura) {
-        arquivoAssinatura.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        mostrarNotificacao('Assinatura importada!', 'success');
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
     
     // Carregar assinatura salva
     const assinaturaSalva = localStorage.getItem('assinatura');
@@ -1413,6 +1690,11 @@ function carregarDados() {
             lancamentos = parsed.lancamentos || [];
             mesReferencia = parsed.mesReferencia || new Date().getMonth() + 1;
             anoReferencia = parsed.anoReferencia || new Date().getFullYear();
+            
+            // Atualizar tabela e resumo após carregar dados
+            if (lancamentos.length > 0) {
+                atualizarTabela();
+            }
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
         }
